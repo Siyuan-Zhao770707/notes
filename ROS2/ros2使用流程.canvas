@@ -6,7 +6,7 @@
 		{"id":"3751eae35e6b1632","type":"text","text":"步骤五：编译功能包\n[[工作空间与功能包#编译功能包]]","x":-77,"y":210,"width":295,"height":80},
 		{"id":"c38e45f366a3a47c","type":"text","text":"步骤六：配置环境变量\n[[工作空间与功能包#配置环境变量（一定要在编译之后才能做）]]\n","x":-480,"y":198,"width":300,"height":105},
 		{"id":"7cb22fec7110927d","type":"text","text":"步骤四：添加程序的入口配置\n[[节点#程序入口的配置（Python）]]\n[[ros2的C++版本#添加依赖和链接CMakeList（C++）]]","x":360,"y":160,"width":280,"height":180},
-		{"id":"7b3f023a54e065c7","type":"text","text":"步骤三：在功能包的工作空间里面编写你想要实现的功能\n[[话题]]    [[服务]]    [[动作]]\n","x":360,"y":-140,"width":280,"height":268}
+		{"id":"7b3f023a54e065c7","type":"text","text":"步骤三：在功能包的工作空间里面编写你想要实现的功能\n[[话题]]    [[服务]]    [[动作]]\n[[ros2的C++版本]]","x":360,"y":12,"width":280,"height":120}
 	],
 	"edges":[
 		{"id":"7a6bc91fd6ed3e9c","fromNode":"abc40d8adabef883","fromSide":"right","toNode":"40882b65928e784c","toSide":"left"},
