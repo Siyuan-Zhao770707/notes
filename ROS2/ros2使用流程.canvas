@@ -1,0 +1,19 @@
+{
+	"nodes":[
+		{"id":"40882b65928e784c","type":"text","text":"步骤二：添加新的自定义的通信接口\n[[通信接口#定义接口（以.msg为例子）]]\n[[通信接口#使用接口]]","x":-100,"y":24,"width":340,"height":96},
+		{"id":"abc40d8adabef883","type":"text","text":"步骤一：创建新功能包\n[[工作空间与功能包#创建功能包]]","x":-480,"y":32,"width":300,"height":80},
+		{"id":"a585837082aaca0a","type":"text","text":"步骤六：运行节点\n[[节点#运行节点]]","x":-480,"y":380,"width":250,"height":80},
+		{"id":"3751eae35e6b1632","type":"text","text":"步骤五：编译功能包\n[[工作空间与功能包#编译功能包]]","x":-77,"y":210,"width":295,"height":80},
+		{"id":"c38e45f366a3a47c","type":"text","text":"步骤六：配置环境变量\n[[工作空间与功能包#配置环境变量（一定要在编译之后才能做）]]\n","x":-480,"y":198,"width":300,"height":105},
+		{"id":"7cb22fec7110927d","type":"text","text":"步骤四：添加程序的入口配置\n[[节点#程序入口的配置（Python）]]\n[[ros2的C++版本#添加依赖和链接CMakeList（C++）]]","x":360,"y":160,"width":280,"height":180},
+		{"id":"7b3f023a54e065c7","type":"text","text":"步骤三：在功能包的工作空间里面编写你想要实现的功能\n[[话题]]    [[服务]]    [[动作]]\n","x":360,"y":-140,"width":280,"height":268}
+	],
+	"edges":[
+		{"id":"7a6bc91fd6ed3e9c","fromNode":"abc40d8adabef883","fromSide":"right","toNode":"40882b65928e784c","toSide":"left"},
+		{"id":"f9397f9c98b28e25","fromNode":"40882b65928e784c","fromSide":"right","toNode":"7b3f023a54e065c7","toSide":"left"},
+		{"id":"2b171e0b429211e9","fromNode":"7cb22fec7110927d","fromSide":"left","toNode":"3751eae35e6b1632","toSide":"right"},
+		{"id":"c622ebe2c3d19123","fromNode":"3751eae35e6b1632","fromSide":"left","toNode":"c38e45f366a3a47c","toSide":"right"},
+		{"id":"0ca438c2ccce33cd","fromNode":"c38e45f366a3a47c","fromSide":"left","toNode":"a585837082aaca0a","toSide":"left"},
+		{"id":"036134e085e13e79","fromNode":"7b3f023a54e065c7","fromSide":"right","toNode":"7cb22fec7110927d","toSide":"right"}
+	]
+}
