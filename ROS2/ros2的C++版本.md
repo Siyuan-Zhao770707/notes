@@ -127,7 +127,7 @@ public:
 	    // RCLCPP_INFO: ROS2 info日志宏，日志格式化打印工具
 		// get_logger(): 获取节点日志器
 		// "Publishing: '%s'": 格式化字符串
-		// c_str(): 转C风格字符串
+		// c_str(): 转C风格字符串，一定要转换不然会报错
         RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
         // 真正地发布话题
         this->publisher_->publish(message);
@@ -150,7 +150,10 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);// 初始化ros2程序
   // 使用智能指针创建MinimalPublisher的类对象并且传入spin函数里面
   // spin函数让程序进入阻塞状态，进入无限循环并循环执行类里面的回调函数，ctrl+c终止
-  rclcpp::spin(std::make_shared<MinimalPublisher>());
+  // 这一部分非常容易被遗忘也非常容易给写成普通的智能指针(std::shared_ptr)
+  // 千万要注意，很多时候如果你编译成功但是运行没反应都是这个问题
+  auto node = std::make_shared<MinimalPublisher>();
+  rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
 }
@@ -186,7 +189,8 @@ private:
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<MinimalSubscriber>());
+  auto node = std::make_shared<MinimalSubscriber>();
+  rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
 }
@@ -300,3 +304,63 @@ int main(int argc, char **argv)
   return 0;
 }
 ```
+
+---
+### 参数
+```cpp
+#include <chrono>
+#include <functional>
+#include <string>
+
+#include <rclcpp/rclcpp.hpp>
+
+using namespace std::chrono_literals;
+
+class MinimalParam : public rclcpp::Node
+{
+public:
+  MinimalParam()
+  : Node("minimal_param_node")
+  {
+    /* 
+    或者可以使用下面这个来给参数增加注释
+    auto param_desc = rcl_interfaces::msg::ParameterDescriptor{};
+    param_desc.description = "This parameter is mine!";
+
+    this->declare_parameter("my_parameter", "world", param_desc); 
+    */
+    this->declare_parameter("my_parameter", "world");
+
+    auto timer_callback = [this](){
+      std::string my_param = this->get_parameter("my_parameter").as_string();
+
+      RCLCPP_INFO(this->get_logger(), "Hello %s!", my_param.c_str());
+
+	  //因为set_parameters()函数接收vector数组，所以需要转变成数组再传入函数
+	  /*
+	  如果想要重制多个参数可以这样写
+		std::vector<rclcpp::Parameter>all_new_parameters{
+		    rclcpp::Parameter("speed", 1.0),
+		    rclcpp::Parameter("name", "robot"),
+		    rclcpp::Parameter("verbose", true)
+		};
+	  */
+      std::vector<rclcpp::Parameter> all_new_parameters{rclcpp::Parameter("my_parameter", "world")};
+      this->set_parameters(all_new_parameters);
+    };
+    timer_ = this->create_wall_timer(1000ms, timer_callback);
+  }
+
+private:
+  rclcpp::TimerBase::SharedPtr timer_;
+};
+
+int main(int argc, char ** argv)
+{
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<MinimalParam>());
+  rclcpp::shutdown();
+  return 0;
+}
+```
+
