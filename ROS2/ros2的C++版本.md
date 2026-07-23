@@ -236,3 +236,67 @@ int main(int argc, char **argv)
     rclcpp::shutdown();
 }
 ```
+
+#### client
+```cpp
+#include "rclcpp/rclcpp.hpp"
+#include "example_interfaces/srv/add_two_ints.hpp"
+
+#include <chrono>
+#include <cstdlib>
+#include <memory>
+
+using namespace std::chrono_literals;
+
+int main(int argc, char **argv)
+{
+  /* argc是命令行传入的参数个数，包含程序本身。argv是参数的字符串数组，argv[0]是程序名，argv[1]、argv[2]等等是后续的参数 */
+  rclcpp::init(argc, argv);
+
+  /* 如果输入的参数数量不足（两个加数+程序自身）就执行 */
+  if (argc != 3) {
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "usage: add_two_ints_client X Y");
+      // 退出主函数并返回非0数值，程序因为错误而终止
+      return 1;
+  }
+
+  // 创建节点
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("add_two_ints_client");
+  rclcpp::Client<example_interfaces::srv::AddTwoInts>::SharedPtr client =
+    node->create_client<example_interfaces::srv::AddTwoInts>("add_two_ints");
+
+  auto request = std::make_shared<example_interfaces::srv::AddTwoInts::Request>();
+  // atoll()将参数1和参数2的字符串转化成longlong类型
+  request->a = atoll(argv[1]);
+  request->b = atoll(argv[2]);
+
+  // 阻塞等待服务端上线，如果没有上线，没一秒钟执行一次循环
+  while (!client->wait_for_service(1s)) {
+    // rclcpp::ok() = true 当前程序正常运行 = false 为当前程序被终止
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
+      return 0;
+    }
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
+  }
+  // 异步接受服务端的response
+  auto result = client->async_send_request(request);
+  // Wait for the result.
+  /* 让程序在这里卡死，直到result的结果出现
+  rclcpp::FutureReturnCode::SUCCESS 成功接收到了服务
+  rclcpp::FutureReturnCode::TIMEOUT 超时了没有接收打服务
+  rclcpp::FutureReturnCode::INTERUPTED 被打断了没有接收到服务
+  如果是类的写法的话，第一个node要填写的是this->shared_from_this()
+  将普通的类指针转换成给ros2节点专用的节点智能共享指针*/
+  if (rclcpp::spin_until_future_complete(node, result) ==
+    rclcpp::FutureReturnCode::SUCCESS)
+  {
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Sum: %ld", result.get()->sum);
+  } else {
+    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service add_two_ints");
+  }
+
+  rclcpp::shutdown();
+  return 0;
+}
+```
