@@ -305,6 +305,91 @@ int main(int argc, char **argv)
 }
 ```
 
+类版本，只保留骨架
+```cpp
+#include "rclcpp/rclcpp.hpp"
+#include "example_interfaces/srv/add_two_ints.hpp"
+
+#include <chrono>
+#include <cstdlib>
+#include <memory>
+
+using namespace std::chrono_literals;
+
+class AddTwoIntsClient : public rclcpp::Node
+{
+public:
+  // 构造函数：传入两个加数，并初始化节点名称和客户端
+  AddTwoIntsClient(int a, int b)
+    : Node("add_two_ints_client"), a_(a), b_(b)
+  {
+    client_ = this->create_client<example_interfaces::srv::AddTwoInts>("add_two_ints");
+  }
+
+  // 执行请求的主逻辑，返回是否成功
+  // 注意！！：在创建函数的时候不要忘记函数名称后面的那个()
+  bool send_request()
+  {
+    // 1. 等待服务可用
+    while (!client_->wait_for_service(1s)) {
+      if (!rclcpp::ok()) {
+        RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
+        return false;
+      }
+      RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
+    }
+
+    // 2. 构造请求
+    // 注意！！！！！！auto这个自动检测数据类型只能够在类的成员函数里面使用！！！
+    // 如果在外面使用会报错
+    auto request = std::make_shared<example_interfaces::srv::AddTwoInts::Request>();
+    request->a = a_;
+    request->b = b_;
+
+    // 3. 异步发送请求
+    auto result = client_->async_send_request(request);
+
+    // 4. 等待响应（使用 this->shared_from_this() 传入节点智能指针）
+    if (rclcpp::spin_until_future_complete(this->shared_from_this(), result) ==
+        rclcpp::FutureReturnCode::SUCCESS)
+    {
+      RCLCPP_INFO(this->get_logger(), "Sum: %ld", result.get()->sum);
+      return true;
+    } else {
+      RCLCPP_ERROR(this->get_logger(), "Failed to call service add_two_ints");
+      return false;
+    }
+  }
+
+private:
+  int a_;
+  int b_;
+  //千万不要忘记下面的最后的SharedPtr!!!!!!!
+  rclcpp::Client<example_interfaces::srv::AddTwoInts>::SharedPtr client_;
+};
+
+int main(int argc, char **argv)
+{
+  rclcpp::init(argc, argv);
+
+  if (argc != 3) {
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "usage: add_two_ints_client X Y");
+    return 1;
+  }
+
+  int a = std::stoll(argv[1]);  // 更安全的转换
+  int b = std::stoll(argv[2]);
+
+  // 创建节点实例（智能指针）
+  auto node = std::make_shared<AddTwoIntsClient>(a, b);
+  
+  // 执行请求
+  bool success = node->send_request();
+
+  rclcpp::shutdown();
+  return success ? 0 : 1;
+}
+```
 ---
 ### 参数
 ```cpp
